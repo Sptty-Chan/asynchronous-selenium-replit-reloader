@@ -1,18 +1,24 @@
 from flask import Flask
-from flask_executor import Executor
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from concurrent.futures import ThreadPoolExecutor as thrd
 import re, time, json
 
 app = Flask("asynchronous-selenium-replit-reloader")
-executor = Executor(app)
 
-worker = False
 waktuItu = int(time.time())
 
-replUrl_1 = "" #url repl saat ini
-replUrl_2 = "" #url repl yang ingin dibikin 24/7 (wajib satu akun dengan url repl saat ini / replUrl_1)
+replUrl_1 = "" # url repl saat ini
+replUrl_2 = "" # url repl yang ingin dibikin 24/7 (wajib satu akun dengan url repl saat ini / replUrl_1)
+
+replUrl_1 = replUrl_1.split("#")
+if len(replUrl_1) > 1:
+    replUrl_1.pop(-1)
+replUrl_1 = "#".join(i for i in replUrl_1) + "#fast.txt"
+replUrl_2 = replUrl_2.split("#")
+if len(replUrl_2) > 1:
+    replUrl_2.pop(-1)
+replUrl_2 = "#".join(i for i in replUrl_2) + "#fast.txt"
 
 def cookieParser():
     cookies = json.loads(open("cookies.txt", "r").read())
@@ -26,8 +32,6 @@ def cookieParser():
     return cookies
 
 def backgroundWorker():
-    global worker
-    worker = True
     cookies = cookieParser()
     options = Options()
     options.add_argument("--headless")
@@ -88,9 +92,9 @@ def subJob_2(options, cookies, replUrl, image):
 
 @app.route("/", methods=["GET"])
 def index():
-    if not worker:
-        executor.submit(backgroundWorker)
     return f"{(int(time.time()) - waktuItu) // 60} menit telah dilalui, repl-mu masih tetap aktif 🥰"
 
 if __name__=="__main__":
-    app.run(host="0.0.0.0", port=5000)
+    with thrd(max_workers=2) as runner:
+        runner.submit(app.run, host="0.0.0.0", port=5000)
+        runner.submit(backgroundWorker)
