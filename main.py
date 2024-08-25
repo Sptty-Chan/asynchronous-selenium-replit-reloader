@@ -31,7 +31,43 @@ def cookieParser():
             cookies[cookie]["sameSite"] = cookies[cookie]["sameSite"].replace(cookies[cookie]["sameSite"][0], cookies[cookie]["sameSite"][0].upper())
     return cookies
 
-def backgroundWorker():
+class Worker:
+    def __init__(self, options, cookies, replUrl, image):
+        self.driver = webdriver.Chrome(options=options)
+        self.cookies = cookies
+        self.replUrl = replUrl
+        self.image = image
+        self.firstLoop = True
+        self.waitUntil = 15
+        self.befTime = None
+        self.sourceStop = None
+        self.sourceRun = None
+
+    def backgroundJob(self):
+        self.driver.get("https://replit.com")
+        self.driver.delete_all_cookies()
+        for cookie in self.cookies:
+            self.driver.add_cookie(cookie)
+        while True:
+            self.driver.get(self.replUrl)
+            self.befTime = int(time.time())
+            while True:
+                self.sourceStop = re.search(">Stop<", self.driver.page_source)
+                self.sourceRun = re.search(">Run<", self.driver.page_source)
+                if self.sourceStop or self.sourceRun:
+                    break
+                if int(time.time()) - self.befTime >= self.waitUntil:
+                    break
+            self.driver.save_screenshot(self.image)
+            if self.firstLoop:
+                self.firstLoop = False
+                self.waitUntil = 1
+
+@app.route("/", methods=["GET"])
+def index():
+    return f"{(int(time.time()) - waktuItu) // 60} menit telah dilalui, repl-mu masih tetap aktif 🥰"
+
+if __name__=="__main__":
     cookies = cookieParser()
     options = Options()
     options.add_argument("--headless")
@@ -40,61 +76,9 @@ def backgroundWorker():
     options.add_argument("--ignore-certificate-errors")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36")
-    with thrd(max_workers=2) as subjob:
-        subjob.submit(subJob_1, options, cookies, replUrl_1, "image_1.png")
-        subjob.submit(subJob_2, options, cookies, replUrl_2, "image_2.png")
-
-def subJob_1(options, cookies, replUrl, image):
-    driver = webdriver.Chrome(options=options)
-    driver.get("https://replit.com")
-    firstLoop = True
-    waitUntil = 15
-    while True:
-        driver.delete_all_cookies()
-        for cookie in cookies:
-            driver.add_cookie(cookie)
-        driver.get(replUrl)
-        befTime = int(time.time())
-        while True:
-            sourceStop = re.search(">Stop<", driver.page_source)
-            sourceRun = re.search(">Run<", driver.page_source)
-            if sourceStop or sourceRun:
-                break
-            if int(time.time()) - befTime >= waitUntil:
-                break
-        driver.save_screenshot(image)
-        if firstLoop:
-            firstLoop = False
-            waitUntil = 3
-
-def subJob_2(options, cookies, replUrl, image):
-    driver = webdriver.Chrome(options=options)
-    driver.get("https://replit.com")
-    firstLoop = True
-    waitUntil = 15
-    while True:
-        driver.delete_all_cookies()
-        for cookie in cookies:
-            driver.add_cookie(cookie)
-        driver.get(replUrl)
-        befTime = int(time.time())
-        while True:
-            sourceStop = re.search(">Stop<", driver.page_source)
-            sourceRun = re.search(">Run<", driver.page_source)
-            if sourceStop or sourceRun:
-                break
-            if int(time.time()) - befTime >= waitUntil:
-                break
-        driver.save_screenshot(image)
-        if firstLoop:
-            firstLoop = False
-            waitUntil = 3
-
-@app.route("/", methods=["GET"])
-def index():
-    return f"{(int(time.time()) - waktuItu) // 60} menit telah dilalui, repl-mu masih tetap aktif 🥰"
-
-if __name__=="__main__":
-    with thrd(max_workers=2) as runner:
+    Browser_1 = Worker(options, cookies, replUrl_1, "image_1.png")
+    Browser_2 = Worker(options, cookies, replUrl_2, "image_2.png")
+    with thrd(max_workers=3) as runner:
         runner.submit(app.run, host="0.0.0.0", port=5000)
-        runner.submit(backgroundWorker)
+        runner.submit(Browser_1.backgroundJob)
+        runner.submit(Browser_2.backgroundJob)
