@@ -11,6 +11,6 @@ Proyek ini dirancang untuk **menjaga repl** yang berjalan di Replit tetap aktif 
 - Implementasi **asinkron** untuk efisiensi dan kecepatan
 
 ## Instalasi
-video tutorial: <a href="https://www.facebook.com/100024425583446/videos/377370342074423/?app=fbl">Link ke facebook @Fanda</a>
+video tutorial: <a href="https://www.facebook.com/100024425583446/posts/pfbid02K6hnh423VoiCFcsTSbL2cz2J4fMiG4DMKC8H2SzxwDhoL3gCzvye6MXURYqqHWTel/?app=fbl">Link ke facebook @Fanda</a>
 
     rm -rf main.py && git clone https://github.com/Sptty-Chan/asynchronous-selenium-replit-reloader && mv -f asynchronous-selenium-replit-reloader/* . && rm -rf asynchronous-selenium-replit-reloader
