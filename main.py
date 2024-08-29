@@ -21,7 +21,7 @@ def cookieParser():
         "unspecified": "Lax"
     }
     for cookie in range(len(cookies)):
-        tempValue = cookies[cookie][sameSite]
+        tempValue = cookies[cookie]["sameSite"]
         cookies[cookie]["sameSite"] = ubahSameSite[tempValue] if tempValue in ubahSameSite else tempValue.capitalize()
     return cookies
 
