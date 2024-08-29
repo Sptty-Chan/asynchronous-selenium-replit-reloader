@@ -8,27 +8,21 @@ app = Flask("asynchronous-selenium-replit-reloader")
 
 waktuItu = int(time.time())
 
-replUrl_1 = "" # url repl saat ini
-replUrl_2 = "" # url repl yang ingin dibikin 24/7 (wajib satu akun dengan url repl saat ini / replUrl_1)
+replUrl_1 = "url1".split("#") # url repl saat ini
+replUrl_2 = "url2".split("#") # url repl yang ingin dibikin 24/7 (wajib satu akun dengan url repl saat ini / replUrl_1)
 
-replUrl_1 = replUrl_1.split("#")
-if len(replUrl_1) > 1:
-    replUrl_1.pop(-1)
-replUrl_1 = "#".join(i for i in replUrl_1) + "#fast.txt"
-replUrl_2 = replUrl_2.split("#")
-if len(replUrl_2) > 1:
-    replUrl_2.pop(-1)
-replUrl_2 = "#".join(i for i in replUrl_2) + "#fast.txt"
+replUrl_1 = "#".join(part for part in (replUrl_1 if len(replUrl_1) == 1 else replUrl_1[:-1])) + "#fast.txt"
+replUrl_2 = "#".join(part for part in (replUrl_2 if len(replUrl_2) == 1 else replUrl_2[:-1])) + "#fast.txt"
 
 def cookieParser():
     cookies = json.loads(open("cookies.txt", "r").read())
+    ubahSameSite = {
+        "no_restriction": "None",
+        "unspecified": "Lax"
+    }
     for cookie in range(len(cookies)):
-        if cookies[cookie]["sameSite"] == "no_restriction":
-            cookies[cookie]["sameSite"] = "None"
-        elif cookies[cookie]["sameSite"] == "unspecified":
-            cookies[cookie]["sameSite"] = "Lax"
-        else:
-            cookies[cookie]["sameSite"] = cookies[cookie]["sameSite"].replace(cookies[cookie]["sameSite"][0], cookies[cookie]["sameSite"][0].upper())
+        tempValue = cookies[cookie][sameSite]
+        cookies[cookie]["sameSite"] = ubahSameSite[tempValue] if tempValue in ubahSameSite else tempValue.capitalize()
     return cookies
 
 class Worker:
